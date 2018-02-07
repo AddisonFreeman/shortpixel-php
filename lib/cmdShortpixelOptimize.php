@@ -134,6 +134,9 @@ try {
                     if(in_array($item->OriginalURL, $memcacheHistory)) {
                         break;
                     } else {
+                        if(sizeof($memcacheHistory) > 50 ) {
+                            array_pop($memcacheHistory);
+                        }
                         array_push($memcacheHistory, $item->OriginalURL);    
                     }
                 }  
