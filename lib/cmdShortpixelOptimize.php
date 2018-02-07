@@ -128,27 +128,19 @@ try {
                     $speed = ($speed ? $speed : \ShortPixel\ShortPixel::MAX_ALLOWED_FILES_PER_CALL);
                     $result = \ShortPixel\fromFolder($folder, $speed, array(), $targetFolderParam)->wait(300)->toFiles($targetFolder);
                 }
-                // $memQueue->mem->set('sp-q_history', 3);
-                // $memQueue->mem->set('sp-q_history3', '3');
                 $memQueue->mem->set('sp-q_result',$result);
-                array_push($memcacheHistory, "item/pathURL/asd.jpg");  
+
+                foreach($result->succeeded as $item) {
+                    if(in_array($item->OriginalURL, $memcacheHistory)) {
+                        break;
+                    } else {
+                        array_push($memcacheHistory, $item->OriginalURL);    
+                    }
+                }  
+                // array_push($memcacheHistory, "item/pathURL/asd.jpg");  
                 $memQueue->mem->set('sp-q_history',$memcacheHistory);
-            } catch (\ShortPixel\ClientException $ex) {
-                // $memQueue->mem->set('sp-q_history', 4);
-                // $memQueue->mem->set('sp-q_history4', '4');
-
-                // foreach($result->succeeded as $item) {
-                //     if(in_array($item->OriginalURL, $memcacheHistory)) {
-                //         break;
-                //     } else {
-                //         array_push($memcacheHistory, $item->OriginalURL);    
-                //     }
-                // }  
-                
                 // $fileQueue->printToFile($folder, $result);
-
-
-
+            } catch (\ShortPixel\ClientException $ex) {
                 if ($ex->getCode() == \ShortPixel\ClientException::NO_FILE_FOUND) {
                     break;
                 } else {
@@ -158,9 +150,6 @@ try {
                 }
                 $splock->unlock();
             }
-            // $memQueue->mem->set('sp-q_history', 5);
-            // $memQueue->mem->set('sp-q_history5', '5');
-            // $memQueue->mem->set('sp-q_history6', 6);
             $tries++;
 
             $crtImageCount = 0;
