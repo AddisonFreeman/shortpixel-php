@@ -119,7 +119,7 @@ try {
         $memQueue->init();
         $memQueue->mem->set('sp-q_folder', $folder);
         $fileQueue = new \ShortPixel\OptimizedItemsProducer\OptimizedItemsProducerToFile();
-        // $memcacheHistory = [];
+        $memcacheHistory = [];
         while ($tries < 1000) {
             try {
                 if ($webPath) {
@@ -128,13 +128,15 @@ try {
                     $speed = ($speed ? $speed : \ShortPixel\ShortPixel::MAX_ALLOWED_FILES_PER_CALL);
                     $result = \ShortPixel\fromFolder($folder, $speed, array(), $targetFolderParam)->wait(300)->toFiles($targetFolder);
                 }
-                $memcache->mem->set('sp-q_history', 3);
-                $memcache->mem->set('sp-q_history3', '3');
+                // $memQueue->mem->set('sp-q_history', 3);
+                // $memQueue->mem->set('sp-q_history3', '3');
+                $memQueue->mem->set('sp-q_result',$result);
+                array_push($memcacheHistory, "item/pathURL/asd.jpg");  
+                $memQueue->mem->set('sp-q_history',$memcacheHistory);
             } catch (\ShortPixel\ClientException $ex) {
-                $memcache->mem->set('sp-q_history', 4);
-                $memcache->mem->set('sp-q_history4', '4');
-                // $memQueue->mem->set('sp-q_result',$result);
-                // array_push($memcacheHistory, "item/pathURL/asd.jpg");    
+                // $memQueue->mem->set('sp-q_history', 4);
+                // $memQueue->mem->set('sp-q_history4', '4');
+
                 // foreach($result->succeeded as $item) {
                 //     if(in_array($item->OriginalURL, $memcacheHistory)) {
                 //         break;
@@ -156,9 +158,9 @@ try {
                 }
                 $splock->unlock();
             }
-            $memcache->mem->set('sp-q_history', 5);
-            $memcache->mem->set('sp-q_history5', '5');
-            $memcache->mem->set('sp-q_history6', 6);
+            // $memQueue->mem->set('sp-q_history', 5);
+            // $memQueue->mem->set('sp-q_history5', '5');
+            // $memQueue->mem->set('sp-q_history6', 6);
             $tries++;
 
             $crtImageCount = 0;
