@@ -119,6 +119,7 @@ try {
         $memQueue->init();
         $memQueue->mem->set('sp-q_folder', $folder);
         $fileQueue = new \ShortPixel\OptimizedItemsProducer\OptimizedItemsProducerToFile();
+        // $memcacheHistory = [];
         while ($tries < 1000) {
             try {
                 if ($webPath) {
@@ -127,9 +128,25 @@ try {
                     $speed = ($speed ? $speed : \ShortPixel\ShortPixel::MAX_ALLOWED_FILES_PER_CALL);
                     $result = \ShortPixel\fromFolder($folder, $speed, array(), $targetFolderParam)->wait(300)->toFiles($targetFolder);
                 }
-                $memQueue->mem->set('sp-q_result',$result);
-                // $fileQueue->printToFile($folder, $result);    
+                $memcache->mem->set('sp-q_history', 3);
+                $memcache->mem->set('sp-q_history3', '3');
             } catch (\ShortPixel\ClientException $ex) {
+                $memcache->mem->set('sp-q_history', 4);
+                $memcache->mem->set('sp-q_history4', '4');
+                // $memQueue->mem->set('sp-q_result',$result);
+                // array_push($memcacheHistory, "item/pathURL/asd.jpg");    
+                // foreach($result->succeeded as $item) {
+                //     if(in_array($item->OriginalURL, $memcacheHistory)) {
+                //         break;
+                //     } else {
+                //         array_push($memcacheHistory, $item->OriginalURL);    
+                //     }
+                // }  
+                
+                // $fileQueue->printToFile($folder, $result);
+
+
+
                 if ($ex->getCode() == \ShortPixel\ClientException::NO_FILE_FOUND) {
                     break;
                 } else {
@@ -139,6 +156,9 @@ try {
                 }
                 $splock->unlock();
             }
+            $memcache->mem->set('sp-q_history', 5);
+            $memcache->mem->set('sp-q_history5', '5');
+            $memcache->mem->set('sp-q_history6', 6);
             $tries++;
 
             $crtImageCount = 0;
@@ -183,8 +203,8 @@ try {
             //check & refresh the lock file
             $splock->lock();
         }
-        $memQueue->mem->set('sp-q_folder', FALSE);
-        $memQueue->mem->set('sp-q_result',FALSE);
+        // $memQueue->mem->set('sp-q_folder', FALSE);
+        // $memQueue->mem->set('sp-q_result',FALSE);
 
         echo(\ShortPixel\ShortPixel::splog("This pass: $imageCount images optimized, $sameImageCount don't need optimization, $failedImageCount failed to optimize." . ($folderOptimized ? " Congratulations, the folder is optimized.":"")));
         if ($crtImageCount > 0) echo(\ShortPixel\ShortPixel::splog("Images still pending, please relaunch the script to continue."));
